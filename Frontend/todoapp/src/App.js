@@ -27,7 +27,6 @@ class App extends Component {
     try {
       const response = await fetch(this.API_URL + "api/Contacts/GetContacts");
       const data = await response.json();
-      console.log("Contact data structure:", data[0]); // This will show us the first contact's structure
       this.setState({ contacts: data });
     } catch (err) {
       console.log(err);
@@ -74,6 +73,20 @@ class App extends Component {
     }
   }
 
+  // Delete contact from the database
+  handleDelete = async (id) => {
+    try {
+      const response = await fetch(`${this.API_URL}api/Contacts/DeleteContacts/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        this.refreshContacts();
+      }
+    } catch (err) {
+      console.log("Error deleting contact:", err);
+    }
+  }
 
 
   render() {
@@ -117,7 +130,7 @@ class App extends Component {
               <h3>{contact.name}</h3>
               <p>{contact.email}</p>
               <p>{contact.message}</p>
-              <button onClick={() => this.deleteContact(contact.id)}>Delete</button>
+              <button onClick={() => this.handleDelete(contact._id)}>Delete</button>
             </div>
           ))
         ) : (
