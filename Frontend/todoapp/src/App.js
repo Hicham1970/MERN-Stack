@@ -9,25 +9,28 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      contacts: []
+      contacts: [],
+      name: "",
+      email: "",
+      message: ""
     };
   }
+
+  handleInputChange = (e) => {
+    const { name, value } = e.target;
+    this.setState({ [name]: value });
+  }
+
 
   // Fetch contacts using async/await
   async refreshContacts() {
     try {
-      const response = await fetch(`${this.API_URL}api/Contacts/GetContacts`, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await fetch(this.API_URL + "api/Contacts/GetContacts");
       const data = await response.json();
-      console.log("Fetched data:", data);
+      console.log("Contact data structure:", data[0]); // This will show us the first contact's structure
       this.setState({ contacts: data });
     } catch (err) {
-      console.log("Error fetching contacts:", err);
+      console.log(err);
     }
   }
 
@@ -36,8 +39,45 @@ class App extends Component {
     this.refreshContacts();
   }
 
+  // Add contact to the database
+  handleSubmit = async (e) => {
+    e.preventDefault();
+    const { name, email, message } = this.state;
+    console.log('Data being sent:', { name, email, message });
+
+    try {
+      const response = await fetch(`${this.API_URL}api/Contacts/AddContacts`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          message
+        })
+      });
+
+      const result = await response.json();
+      console.log('Server response:', result);
+
+      if (response.ok) {
+        this.setState({
+          name: '',
+          email: '',
+          message: ''
+        });
+        this.refreshContacts();
+      }
+    } catch (err) {
+      console.log("Server error:", err);
+    }
+  }
+
+
+
   render() {
-    const { contacts } = this.state;
+    const { contacts, name, email, message } = this.state;
     return (
       <div className="App">
         <h2>Todo App</h2>
@@ -45,28 +85,35 @@ class App extends Component {
         <form onSubmit={this.handleSubmit}>
           <input
             type="text"
+            name='name'
+            value={name}
             placeholder="Name"
-            value={this.state.name}
-            onChange={this.handleChange}
+            onChange={this.handleInputChange}
+
+
           />
           <input
             type="email"
+            name='email'
             placeholder="Email"
-            value={this.state.email}
-            onChange={this.handleChange}
+            value={email}
+            onChange={this.handleInputChange}
+
           />
           <input
             type="text"
+            name='message'
             placeholder="Message"
-            value={this.state.message}
-            onChange={this.handleChange}
-          />&nbsp;&nbsp;
+            value={message}
+            onChange={this.handleInputChange}
+
+          />
           <button type="submit">Add Contact</button>
         </form>
         {/* Display contacts */}
         {contacts && contacts.length > 0 ? (
-          contacts.map(contact => (
-            <div key={contact.id} className="contact-card">
+          contacts.map((contact) => (
+            <div key={contact._id} className="contact-card">
               <h3>{contact.name}</h3>
               <p>{contact.email}</p>
               <p>{contact.message}</p>

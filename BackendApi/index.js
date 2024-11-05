@@ -72,6 +72,7 @@ app.get("/api/Contacts/GetContacts", async (req, res) => {
 
 // post request
 app.post('/api/Contacts/AddContacts', multer().none(), async (req, res) => {
+    console.log('Received data:', req.body);
     try {
         if (!database) {
             return res.status(500).json({ error: "Database connection not established" });
